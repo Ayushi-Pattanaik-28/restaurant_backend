@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use App\Models\WebUser;
+
+class WebUserController extends Controller
+{
+    public function create(Request $request)
+    {
+        // ⿡ Validate input
+        $request->validate([
+            'email' => 'required|email|unique:webusers,email',
+            'password' => 'required',
+        ]);
+
+        // ⿢ Create user (timestamps handled automatically)
+        $user = WebUser::create([
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        // ⿣ Generate API token using Sanctum
+        $token = $user->createToken('API Token')->plainTextToken;
+
+        // ⿤ Return JSON response
+        return response()->json([
+            'message' => 'User registered successfully',
+            'token' => $token,
+            'user' => $user,
+        ]);
+    }
+}
